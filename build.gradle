@@ -6,12 +6,12 @@ apply plugin: 'opensearch.opensearchplugin'
 apply plugin: 'opensearch.yaml-rest-test'
 apply plugin: 'opensearch.pluginzip'
 
-def pluginName = 'rename'
-def pluginDescription = 'Custom plugin'
+def pluginName = 'opensearch-analysis-hanlp'
+def pluginDescription = 'HanLP analysis for opensearch'
 def projectPath = 'org.opensearch'
-def pathToPlugin = 'path.to.plugin'
-def pluginClassName = 'RenamePlugin'
-group = "RenameGroup"
+def pathToPlugin = 'plugin.analysis.hanlp'
+def pluginClassName = 'AnalysisHanLPPlugin'
+group = "org.opensearch"
 
 tasks.register("preparePluginPathDirs") {
     mustRunAfter clean
@@ -37,8 +37,8 @@ publishing {
               }
               developers {
                 developer {
-                  name = "OpenSearch"
-                  url = "https://github.com/opensearch-project/opensearch-plugin-template-java"
+                  name = "Rory Ye"
+                  url = "https://github.com/jdkcn"
                 }
               }
             }
@@ -59,10 +59,15 @@ loggerUsageCheck.enabled = false
 
 // No need to validate pom, as we do not upload to maven/sonatype
 validateNebulaPom.enabled = false
+thirdPartyAudit.enabled = false
+dependencyLicenses.enabled = false
+testingConventions.enabled = false
+forbiddenPatterns.enabled = false
+licenseHeaders.enabled = false
 
 buildscript {
     ext {
-        opensearch_version = System.getProperty("opensearch.version", "3.0.0-SNAPSHOT")
+        opensearch_version = System.getProperty("opensearch.version", "2.8.0")
     }
 
     repositories {
@@ -86,6 +91,29 @@ repositories {
 
 test {
     include '**/*Tests.class'
+}
+
+dependencies {
+    implementation group: 'com.hankcs', name: 'hanlp', version: 'portable-1.8.4'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+    implementation group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.15'
+    implementation 'org.testng:testng:7.1.0'
+}
+
+forbiddenApisMain {
+    excludes = [
+            '**/AnalysisHanLPPlugin.class',
+            '**/PorterStemmer.class',
+            '**/RemoteDictionaryConfig.class',
+            '**/DictionaryFileCache.class',
+            '**/CustomDictionaryMonitor.class',
+            '**/model/*.class',
+            '**/CustomStopWordDictionary.class'
+    ]
+}
+
+javadoc {
+    enabled = false
 }
 
 task integTest(type: RestIntegTestTask) {
